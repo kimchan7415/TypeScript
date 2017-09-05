@@ -656,12 +656,12 @@ namespace ts.refactor.extractMethod {
         const typeParametersAndDeclarations = arrayFrom(typeParameterUsages.values()).map(type => ({ type, declaration: getFirstDeclaration(type) }));
         const sortedTypeParametersAndDeclarations = typeParametersAndDeclarations.sort(compareTypesByDeclarationOrder);
 
-        const typeParameters: ReadonlyArray<TypeParameterDeclaration> = sortedTypeParametersAndDeclarations.map(t => t.declaration as TypeParameterDeclaration);
+        const typeParameters: ReadonlyArray<TypeParameterDeclaration> = sortedTypeParametersAndDeclarations.length === 0 ? undefined : sortedTypeParametersAndDeclarations.map(t => t.declaration as TypeParameterDeclaration); //!!!
 
         // Strictly speaking, we should check whether each name actually binds to the appropriate type
         // parameter.  In cases of shadowing, they may not.
-        const callTypeArguments: ReadonlyArray<TypeNode> | undefined = typeParameters.length > 0
-            ? typeParameters.map(decl => createTypeReferenceNode(decl.name, /*typeArguments*/ undefined))
+        const callTypeArguments: NodeArray<TypeNode> | undefined = typeParameters
+            ? typeParameters.map(decl => createTypeReferenceNode(decl.name, /*typeArguments*/ undefined)) as any //!!!
             : undefined;
 
         // Provide explicit return types for contextually-typed functions

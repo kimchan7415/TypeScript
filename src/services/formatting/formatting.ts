@@ -728,6 +728,7 @@ namespace ts.formatting {
                 parent: Node,
                 parentStartLine: number,
                 parentDynamicIndentation: DynamicIndentation): void {
+                Debug.assert(nodes.pos !== undefined); //NodeArray must have defined pos!!!
 
                 const listStartToken = getOpenTokenForList(parent, nodes);
                 const listEndToken = getCloseTokenForOpenToken(listStartToken);
@@ -1209,6 +1210,7 @@ namespace ts.formatting {
             case SyntaxKind.MethodSignature:
             case SyntaxKind.ArrowFunction:
                 if ((<FunctionDeclaration>node).typeParameters === list) {
+                    Debug.assert(list.length !== 0);
                     return SyntaxKind.LessThanToken;
                 }
                 else if ((<FunctionDeclaration>node).parameters === list) {
@@ -1218,6 +1220,7 @@ namespace ts.formatting {
             case SyntaxKind.CallExpression:
             case SyntaxKind.NewExpression:
                 if ((<CallExpression>node).typeArguments === list) {
+                    Debug.assert(list.length !== 0);
                     return SyntaxKind.LessThanToken;
                 }
                 else if ((<CallExpression>node).arguments === list) {
@@ -1226,6 +1229,7 @@ namespace ts.formatting {
                 break;
             case SyntaxKind.TypeReference:
                 if ((<TypeReferenceNode>node).typeArguments === list) {
+                    Debug.assert(list.length !== 0);
                     return SyntaxKind.LessThanToken;
                 }
         }

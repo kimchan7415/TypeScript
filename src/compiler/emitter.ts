@@ -2411,6 +2411,12 @@ namespace ts {
 
             const isEmpty = isUndefined || children.length === 0 || start >= children.length || count === 0;
             if (isEmpty && format & ListFormat.OptionalIfEmpty) {
+                //!!!!!!!!!!!!!!!!
+                //If children.length === 0, we never call `onBeforeEmitNodeArray`.
+                //In `textChanges.ts`, that is used to set the position!!!
+                //Maybe do::::
+                //onBeforeEmitNodeArray(children);
+                //onAfterEmitNodeArray(children);
                 return;
             }
 

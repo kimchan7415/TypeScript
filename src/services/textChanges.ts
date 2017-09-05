@@ -5,19 +5,23 @@ namespace ts.textChanges {
      * Currently for simplicity we store recovered positions on the node itself.
      * It can be changed to side-table later if we decide that current design is too invasive.
      */
-    function getPos(n: TextRange) {
-        return (<any>n)["__pos"];
+    function getPos(n: TextRange): number {
+        const result = (<any>n)["__pos"];
+        Debug.assert(typeof result === "number");
+        return result;
     }
 
-    function setPos(n: TextRange, pos: number) {
+    function setPos(n: TextRange, pos: number): void {
         (<any>n)["__pos"] = pos;
     }
 
-    function getEnd(n: TextRange) {
-        return (<any>n)["__end"];
+    function getEnd(n: TextRange): number {
+        const result = (<any>n)["__end"];
+        Debug.assert(typeof result === "number");
+        return result;
     }
 
-    function setEnd(n: TextRange, end: number) {
+    function setEnd(n: TextRange, end: number): void {
         (<any>n)["__end"] = end;
     }
 
@@ -543,6 +547,11 @@ namespace ts.textChanges {
 
         private getFormattedTextOfNode(node: Node, sourceFile: SourceFile, pos: number, options: ChangeNodeOptions): string {
             const nonformattedText = getNonformattedText(node, sourceFile, this.newLine);
+
+            if (nonformattedText.text === "newFunction();") {//kill -- just wanted to skip this when debugging
+                return "newFunction();";
+            }
+
             if (this.validator) {
                 this.validator(nonformattedText);
             }
@@ -582,7 +591,7 @@ namespace ts.textChanges {
         readonly node: Node;
     }
 
-    export function getNonformattedText(node: Node, sourceFile: SourceFile | undefined, newLine: NewLineKind): NonFormattedText {
+    function getNonformattedText(node: Node, sourceFile: SourceFile | undefined, newLine: NewLineKind): NonFormattedText {
         const options = { newLine, target: sourceFile && sourceFile.languageVersion };
         const writer = new Writer(getNewLineCharacter(options));
         const printer = createPrinter(options, writer);
@@ -590,15 +599,27 @@ namespace ts.textChanges {
         return { text: writer.getText(), node: assignPositionsToNode(node) };
     }
 
-    export function applyFormatting(nonFormattedText: NonFormattedText, sourceFile: SourceFile, initialIndentation: number, delta: number, rulesProvider: formatting.RulesProvider) {
+    function applyFormatting(nonFormattedText: NonFormattedText, sourceFile: SourceFile, initialIndentation: number, delta: number, rulesProvider: formatting.RulesProvider) {
         const lineMap = computeLineStarts(nonFormattedText.text);
         const file: SourceFileLike = {
             text: nonFormattedText.text,
             lineMap,
-            getLineAndCharacterOfPosition: pos => computeLineAndCharacterOfPosition(lineMap, pos)
+            getLineAndCharacterOfPosition: pos => computeLineAndCharacterOfPosition(lineMap, pos),
         };
+        (file as any).kind = SyntaxKind.SourceFile; //Otherwise getsourcefile() will fail (needed for debugging)
+        nonFormattedText.node.parent = file as any as Node;
+        setParents(nonFormattedText.node);
+        const _sf = nonFormattedText.node.getSourceFile();
+        _sf;
         const changes = formatting.formatNodeGivenIndentation(nonFormattedText.node, file, sourceFile.languageVariant, initialIndentation, delta, rulesProvider);
         return applyChanges(nonFormattedText.text, changes);
+    }
+
+    function setParents(node: Node) {
+        node.forEachChild(child => {
+            child.parent = node;
+            setParents(child);
+        });
     }
 
     export function applyChanges(text: string, changes: TextChange[]): string {
@@ -616,14 +637,10 @@ namespace ts.textChanges {
     function assignPositionsToNode(node: Node): Node {
         const visited = visitEachChild(node, assignPositionsToNode, nullTransformationContext, assignPositionsToNodeArray, assignPositionsToNode);
         // create proxy node for non synthesized nodes
-        const newNode = nodeIsSynthesized(visited)
-            ? visited
-            : (Proxy.prototype = visited, new (<any>Proxy)());
+        const newNode = nodeIsSynthesized(visited) ? visited : Object.create(visited) as Node;
         newNode.pos = getPos(node);
         newNode.end = getEnd(node);
         return newNode;
-
-        function Proxy() { }
     }
 
     function assignPositionsToNodeArray(nodes: NodeArray<any>, visitor: Visitor, test?: (node: Node) => boolean, start?: number, count?: number) {
@@ -632,7 +649,7 @@ namespace ts.textChanges {
             return visited;
         }
         // clone nodearray if necessary
-        const nodeArray = visited === nodes ? createNodeArray(visited.slice(0)) : visited;
+        const nodeArray = visited === nodes ? createNodeArray(visited.slice()) : visited;//NOTE: slice() takes out the old pos and end. Guess that's OK since we overwrite them
         nodeArray.pos = getPos(nodes);
         nodeArray.end = getEnd(nodes);
         return nodeArray;

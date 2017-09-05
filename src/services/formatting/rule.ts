@@ -3,13 +3,14 @@
 /* @internal */
 namespace ts.formatting {
     export class Rule {
+        public name?: string;
         constructor(
-            public Descriptor: RuleDescriptor,
-            public Operation: RuleOperation,
-            public Flag: RuleFlags = RuleFlags.None) {
+            readonly Descriptor: RuleDescriptor,
+            readonly Operation: RuleOperation,
+            readonly Flag: RuleFlags = RuleFlags.None) {
         }
 
-        public toString() {
+        public toString() { //kill
             return "[desc=" + this.Descriptor + "," +
                 "operation=" + this.Operation + "," +
                 "flag=" + this.Flag + "]";

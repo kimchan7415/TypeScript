@@ -1530,7 +1530,7 @@ namespace ts {
                 assertEachNode)
             : noop;
 
-        export const assertNode = shouldAssert(AssertionLevel.Normal)
+        export const assertNode = shouldAssert(AssertionLevel.Normal) //Why was this a noop when I tried it???
             ? (node: Node, test: (node: Node) => boolean, message?: string): void => assert(
                 test === undefined || test(node),
                 message || "Unexpected node.",

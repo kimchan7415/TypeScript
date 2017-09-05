@@ -4666,8 +4666,13 @@ namespace ts {
 
     /* @internal */
     export function isNodeArray<T extends Node>(array: ReadonlyArray<T>): array is NodeArray<T> {
-        return array.hasOwnProperty("pos")
-            && array.hasOwnProperty("end");
+        if (array.hasOwnProperty("pos")
+            && array.hasOwnProperty("end")) {
+            Debug.assert((array as NodeArray<T>).pos !== undefined);
+            Debug.assert((array as NodeArray<T>).end !== undefined);
+            return true;
+        }
+        return false;
     }
 
     // Literals

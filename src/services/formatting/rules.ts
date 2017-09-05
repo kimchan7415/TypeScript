@@ -253,21 +253,40 @@ namespace ts.formatting {
         // No space before non-null assertion operator
         public NoSpaceBeforeNonNullAssertionOperator: Rule;
 
+        //Why is this instance? Why not static?
         constructor() {
             ///
             /// Common Rules
             ///
 
             // Leave comments alone
-            this.IgnoreBeforeComment = new Rule(RuleDescriptor.create4(Shared.TokenRange.Any, Shared.TokenRange.Comments), RuleOperation.create1(RuleAction.Ignore));
-            this.IgnoreAfterLineComment = new Rule(RuleDescriptor.create3(SyntaxKind.SingleLineCommentTrivia, Shared.TokenRange.Any), RuleOperation.create1(RuleAction.Ignore));
+            this.IgnoreBeforeComment = new Rule(
+                RuleDescriptor.create4(Shared.TokenRange.Any, Shared.TokenRange.Comments),
+                RuleOperation.create1(RuleAction.Ignore));
+            this.IgnoreAfterLineComment = new Rule(
+                RuleDescriptor.create3(SyntaxKind.SingleLineCommentTrivia, Shared.TokenRange.Any),
+                RuleOperation.create1(RuleAction.Ignore));
 
             // Space after keyword but not before ; or : or ?
-            this.NoSpaceBeforeSemicolon = new Rule(RuleDescriptor.create2(Shared.TokenRange.Any, SyntaxKind.SemicolonToken), RuleOperation.create2(new RuleOperationContext(Rules.IsNonJsxSameLineTokenContext), RuleAction.Delete));
-            this.NoSpaceBeforeColon = new Rule(RuleDescriptor.create2(Shared.TokenRange.Any, SyntaxKind.ColonToken), RuleOperation.create2(new RuleOperationContext(Rules.IsNonJsxSameLineTokenContext, Rules.IsNotBinaryOpContext), RuleAction.Delete));
-            this.NoSpaceBeforeQuestionMark = new Rule(RuleDescriptor.create2(Shared.TokenRange.Any, SyntaxKind.QuestionToken), RuleOperation.create2(new RuleOperationContext(Rules.IsNonJsxSameLineTokenContext, Rules.IsNotBinaryOpContext), RuleAction.Delete));
-            this.SpaceAfterColon = new Rule(RuleDescriptor.create3(SyntaxKind.ColonToken, Shared.TokenRange.Any), RuleOperation.create2(new RuleOperationContext(Rules.IsNonJsxSameLineTokenContext, Rules.IsNotBinaryOpContext), RuleAction.Space));
-            this.SpaceAfterQuestionMarkInConditionalOperator = new Rule(RuleDescriptor.create3(SyntaxKind.QuestionToken, Shared.TokenRange.Any), RuleOperation.create2(new RuleOperationContext(Rules.IsNonJsxSameLineTokenContext, Rules.IsConditionalOperatorContext), RuleAction.Space));
+            this.NoSpaceBeforeSemicolon = new Rule(
+                RuleDescriptor.create2(Shared.TokenRange.Any, SyntaxKind.SemicolonToken),
+                RuleOperation.create2(new RuleOperationContext(Rules.IsNonJsxSameLineTokenContext), RuleAction.Delete));
+            this.NoSpaceBeforeColon = new Rule(
+                RuleDescriptor.create2(Shared.TokenRange.Any, SyntaxKind.ColonToken),
+                RuleOperation.create2(new RuleOperationContext(Rules.IsNonJsxSameLineTokenContext, Rules.IsNotBinaryOpContext), RuleAction.Delete));
+            this.NoSpaceBeforeQuestionMark = new Rule(
+                RuleDescriptor.create2(Shared.TokenRange.Any, SyntaxKind.QuestionToken),
+                RuleOperation.create2(
+                    new RuleOperationContext(Rules.IsNonJsxSameLineTokenContext, Rules.IsNotBinaryOpContext),
+                    RuleAction.Delete));
+            this.SpaceAfterColon = new Rule(
+                RuleDescriptor.create3(SyntaxKind.ColonToken, Shared.TokenRange.Any),
+                RuleOperation.create2(
+                    new RuleOperationContext(Rules.IsNonJsxSameLineTokenContext, Rules.IsNotBinaryOpContext),
+                    RuleAction.Space));
+            this.SpaceAfterQuestionMarkInConditionalOperator = new Rule(
+                RuleDescriptor.create3(SyntaxKind.QuestionToken, Shared.TokenRange.Any),
+                RuleOperation.create2(new RuleOperationContext(Rules.IsNonJsxSameLineTokenContext, Rules.IsConditionalOperatorContext), RuleAction.Space));
             this.NoSpaceAfterQuestionMark = new Rule(RuleDescriptor.create3(SyntaxKind.QuestionToken, Shared.TokenRange.Any), RuleOperation.create2(new RuleOperationContext(Rules.IsNonJsxSameLineTokenContext), RuleAction.Delete));
             this.SpaceAfterSemicolon = new Rule(RuleDescriptor.create3(SyntaxKind.SemicolonToken, Shared.TokenRange.Any), RuleOperation.create2(new RuleOperationContext(Rules.IsNonJsxSameLineTokenContext), RuleAction.Space));
 
@@ -569,6 +588,15 @@ namespace ts.formatting {
                 this.SpaceAfterSemicolon,
                 this.SpaceBetweenStatements, this.SpaceAfterTryFinally
             ];
+
+            //for debugging...
+            const o: ts.MapLike<any> = <any>this;
+            for (const name in o) {
+                const rule = o[name];
+                if (rule instanceof Rule) {
+                    rule.name = name;
+                }
+            }
         }
 
         ///
